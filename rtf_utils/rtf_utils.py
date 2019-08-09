@@ -1,24 +1,48 @@
-from airflow import DAG
-from airflow.operators.dummy_operator import DummyOperator
-from airflow.operators.python_operator import PythonOperator
-from airflow.models import Variable
 from google.cloud import bigquery, storage
 
-def list_blobs(bucket_name):
+
+############ GCS Utils ############
+
+def list_blobs(bucket_name,prefix=None):
     """Lists all the blobs in the bucket."""
     storage_client = storage.Client()
     bucket = storage_client.get_bucket(bucket_name)
-    blobs = bucket.list_blobs()
+    if prefix:
+        blobs = bucket.list_blobs(prefix=prefix)
+    else:
+        blobs = bucket.list_blobs()
     return blobs
 
-def upload_blob(project_id, bucket_name, source, destination_blob_name):
+def upload_blob(bucket_name, destination_blob_name, source, mode):
     """Uploads a file to the bucket."""
-    storage_client = storage.Client(project=project_id)
+    if mode not in ["string","filename"]:
+        raise SyntaxError    
+
+    storage_client = storage.Client()
     bucket = storage_client.get_bucket(bucket_name)
     blob = bucket.blob(destination_blob_name)
-    blob.upload_from_string(source)
-    print('File uploaded to {}.'.format(destination_blob_name))
-    return
+    
+    if mode == "string":
+        blob.upload_from_string(source)
+    elif mode == "filename":
+        blob.upload_from_filename(source)
+    
+    print('File uploaded as {}.'.format(destination_blob_name))
+
+
+def copy_blob(bucket_name, blob_name, new_bucket_name, new_blob_name):
+    """Copies a blob from one bucket to another with a new name."""
+    storage_client = storage.Client()
+    source_bucket = storage_client.get_bucket(bucket_name)
+    source_blob = source_bucket.blob(blob_name)
+    destination_bucket = storage_client.get_bucket(new_bucket_name)
+
+    new_blob = source_bucket.copy_blob(
+        source_blob, destination_bucket, new_blob_name)
+
+    print('Blob {} in bucket {} copied to blob {} in bucket {}.'.format(
+        source_blob.name, source_bucket.name, new_blob.name,
+        destination_bucket.name))
 
 def delete_blob(bucket_name, blob_name):
     """Deletes a blob from the bucket."""
@@ -28,6 +52,9 @@ def delete_blob(bucket_name, blob_name):
     blob.delete()
 
     print('Blob {} deleted.'.format(blob_name))
+
+
+############ BQ Utils ############
 
 def bq_query(query):
     client = bigquery.Client()
@@ -49,10 +76,6 @@ def bq_query(query):
         # Row values can be accessed by field name or index
         assert row[0] == row.name == row["name"]
         print(row)
-
-def build_bq_schema(fields):
-    return [bigquery.SchemaField(field[0],field[1]) for field in fields]
-    
 
 def bq_load_json(dataset_id,file_uri,bq_schema,dest_table,filetype,mode=None):
     ## switch to logging
