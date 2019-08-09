@@ -3,7 +3,7 @@ from airflow import DAG
 from airflow.models import Variable
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.python_operator import PythonOperator
-from RTF.rtf_utils.rtf_utils import copy_blob, list_blobs
+from RTF.rtf_utils.rtf_utils import copy_blob, list_blobs, delete_blob
 
 watch_bucket = "sixty-analytics"
 dest_bucket = "rtf_staging"
@@ -22,7 +22,7 @@ default_args = {
 dag = DAG('Move_DataLab_Export',
             default_args=default_args,
             description='Move DataLab Export to Staging GCS',
-            schedule_interval='@once', 
+            schedule_interval=None, 
             catchup=False)
 
 def copy_blob_task(**op_kwargs):
@@ -48,7 +48,7 @@ blobs = list_blobs("sixty-analytics",prefix="rtf_")
 
     
 for blob in blobs:
-    move_blob = PythonOperator(task_id = "Move_" + blob.name,
+    move_blob_task = PythonOperator(task_id = "Move_" + blob.name,
                     python_callable = copy_blob_task,
                     op_kwargs = {
                         "bucket_name":watch_bucket, 
@@ -59,7 +59,7 @@ for blob in blobs:
                     dag = dag
                     )
 
-    delete_blob = PythonOperator(task_id = "Delete_" + blob.name,
+    delete_blob_task = PythonOperator(task_id = "Delete_" + blob.name,
                     python_callable = delete_old_blob_task,
                     op_kwargs = {
                         "bucket_name":watch_bucket, 
@@ -67,4 +67,4 @@ for blob in blobs:
                     },
                     dag = dag)
                     
-    start_task >> move_blob >> delete_blob >> end_task
+    start_task >> move_blob_task >> delete_blob_task >> end_task
