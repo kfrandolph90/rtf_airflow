@@ -2,7 +2,7 @@ from airflow import DAG
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.python_operator import PythonOperator
 from airflow.models import Variable
-from rtf_utils import bq_load_json,build_bq_schema
+
 from datetime import datetime,timedelta
 
 from RTF.rtf_utils.rtf_utils import MoatTile,upload_blob,format_json_newline
@@ -12,7 +12,7 @@ import logging
 ## Load Stuff
 TOKEN = Variable.get('rtf_moat_token')
 
-logging.INFO("Loaded MOAT Token")
+logging.info("Loaded MOAT Token")
 
 dest_bucket = "rtf_staging"
 
@@ -57,8 +57,9 @@ def moat_request_task(**context):
     
     logging.info("Get Tile Data for {} - {} ".format(start_date,end_date))    
     tile.get_data(start_date,end_date,TOKEN) ##rewire to pull last 3 days
-    filename = tile.name + start_date + '_' + end_date + ".json"
-    logging.info("Moat Req Success: {} Rows".format(len(tile.data)))
+    logging.info("Moat Req All Good")
+    filename = tile.name + "_" + start_date + '_' + end_date + ".json"
+
     upload_str = format_json_newline(tile.data)    
     
     upload_blob(
@@ -68,7 +69,7 @@ def moat_request_task(**context):
         mode = "string"    
     )
 
-    logging.info("Moat Req Success: {} Rows".format(len(tile.data)))
+    logging.info("{} Uploaded!".format(filename))
 
     return filename
 

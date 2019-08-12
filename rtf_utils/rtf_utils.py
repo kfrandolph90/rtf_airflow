@@ -128,11 +128,11 @@ def bq_load_json(dataset_id,file_uri,bq_schema,dest_table,filetype,mode=None):
 
 ############ Platform Utils ############
 
-TOKEN = Variable.get('rtf_moat_token')
+
 
 class MoatTile:
     with open("/home/airflow/gcs/dags/RTF/moat_config_pixel.json") as json_file:
-        CONFIG = json.load(json_file)
+        config = json.load(json_file)
 
     def __init__(self, tile_id, name, campaigns, tile_type, social=None, **kwargs):
         self.brandid = tile_id
