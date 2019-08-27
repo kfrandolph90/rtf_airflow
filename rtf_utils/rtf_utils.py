@@ -2,9 +2,15 @@ from google.cloud import bigquery, storage
 import requests
 import os
 import json
+import time
 from time import sleep
 import logging
-from io import StringIO
+from io import StringIO,FileIO
+
+from googleapiclient import discovery, http
+from oauth2client import client
+
+import random
 
 
 ############ GCS Utils ############
@@ -58,6 +64,12 @@ def delete_blob(bucket_name, blob_name):
 
     print('Blob {} deleted.'.format(blob_name))
 
+def get_blob(bucket,blob):
+    storage_client = storage.Client()
+    bucket = storage_client.get_bucket(bucket)
+    blob = bucket.get_blob(blob)
+    return blob
+
 
 ############ BQ Utils ############
 
@@ -82,7 +94,7 @@ def bq_query(query):
         assert row[0] == row.name == row["name"]
         print(row)
 
-def bq_load_json(dataset_id,file_uri,bq_schema,dest_table,filetype,mode=None):
+def bq_load(dataset_id,file_uri,bq_schema,dest_table,filetype,mode=None):
     ## switch to logging
     ## uri = "gs://cloud-samples-data/bigquery/us-states/us-states.json"
     
@@ -127,9 +139,6 @@ def bq_load_json(dataset_id,file_uri,bq_schema,dest_table,filetype,mode=None):
     print("Loaded {} rows.".format(destination_table.num_rows))
 
 ############ Platform Utils ############
-
-
-
 class MoatTile:
     with open("/home/airflow/gcs/dags/RTF/moat_config_pixel.json") as json_file:
         config = json.load(json_file)
@@ -205,3 +214,105 @@ def format_json_newline(data):
     buf.write(row_str)
     buf.seek(0)
     return buf.getvalue()
+
+
+
+def cleanup(filename):
+    try:
+        os.remove(filename)
+    except OSError as e: 
+        print ("Error: %s - %s." % (e.filename, e.strerror))
+
+
+def clean_dcm_file(csvobj):
+    data = []
+    write = False
+    reader = csv.reader(csvobj, delimiter=',')
+    for row in reader:
+        if write == True:
+            data.append(row)        
+        elif row == ['Report Fields']:
+            write = True
+
+    if data[-1][0] == 'Grand Total:':
+        data.pop()
+    return data
+
+output = io.StringIO()
+writer = csv.writer(output, quoting=csv.QUOTE_NONNUMERIC)
+for row in a:
+    writer.writerow(row)
+
+############ DCM/DFA Utils ############
+CHUNK_SIZE = 32 * 1024 * 1024
+MIN_RETRY_INTERVAL = 10
+# Maximum amount of time between polling requests. Defaults to 10 minutes.
+MAX_RETRY_INTERVAL = 10 * 60
+# Maximum amount of time to spend polling. Defaults to 1 hour.
+MAX_RETRY_ELAPSED_TIME = 60 * 60
+
+def run_report(service, profile_id, report_id):
+    report_file = service.reports().run(
+      profileId=profile_id, reportId=report_id).execute()
+    return report_file
+    
+
+def next_sleep_interval(previous_sleep_interval):
+    min_interval = previous_sleep_interval or MIN_RETRY_INTERVAL
+    max_interval = previous_sleep_interval * 3 or MIN_RETRY_INTERVAL
+    return min(MAX_RETRY_INTERVAL, random.randint(min_interval, max_interval))
+
+
+def wait_for_report_file(service,report_id, file_id):    
+    sleep = 0
+    tries = 0
+    start_time = time.time()
+    
+    while True:
+        report_file = service.files().get(reportId=report_id, fileId=file_id).execute()
+        status = report_file['status']
+        
+        if status == 'REPORT_AVAILABLE':
+            logging.info("Report All Good")
+            return
+        elif status != 'PROCESSING':
+            logging.info("Error: {}".format(status))
+            return
+        
+        elif time.time() - start_time > MAX_RETRY_ELAPSED_TIME:
+            logging.info('File processing deadline exceeded.')
+            return
+
+        tries+=1
+        logging.info("Report not ready, tries #{}".format(tries))
+        sleep = next_sleep_interval(sleep)
+        
+
+def generate_file_name(report_file):
+    """Generates a report file name based on the file metadata."""
+  # If no filename is specified, use the file ID instead.
+    file_name = report_file['fileName'] or report_file['id']
+    extension = '.csv' if report_file['format'] == 'CSV' else '.xml'
+    return file_name + extension
+        
+def download_file(service,report_id,file_id):
+    try:
+        report_file = service.files().get(reportId=report_id,fileId=file_id).execute()
+        file_name = generate_file_name(report_file)
+        if report_file['status'] == 'REPORT_AVAILABLE':
+            out_file = FileIO(file_name, mode='wb')
+
+            request = service.files().get_media(reportId=report_id, fileId=file_id)
+
+            downloader = http.MediaIoBaseDownload(out_file, request,
+                                                chunksize=CHUNK_SIZE)
+
+            download_finished = False
+
+            while download_finished is False:
+                _, download_finished = downloader.next_chunk()
+    except client.AccessTokenRefreshError:
+        print ('The credentials have been revoked or expired, please re-run the '
+           'application to re-authorize')
+    return file_name
+

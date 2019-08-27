@@ -18,9 +18,19 @@ TODO:
 """
 
 class CampaignManagerReport:
+    """
+    Reference:
+    131786951123-compute@developer.gserviceaccount.com ----> 5096586
+    
+    
+    
+    """
+    
     api_name = 'dfareporting'
     api_version = 'v3.3'
-    api_scopes = ['https://www.googleapis.com/auth/dfareporting', 'https://www.googleapis.com/auth/dfatrafficking',  'https://www.googleapis.com/auth/ddmconversions']
+    api_scopes = ['https://www.googleapis.com/auth/dfareporting',
+                  'https://www.googleapis.com/auth/dfatrafficking',  
+                  'https://www.googleapis.com/auth/ddmconversions']
     
     def __init__(self,creds,profile_id,report_id):
         self.profile_id = profile_id
@@ -28,9 +38,12 @@ class CampaignManagerReport:
         scoped_creds = creds.with_scopes(self.api_scopes)
         self.service = discovery.build(self.api_name, self.api_version, credentials=scoped_creds,cache_discovery=False)
         self.report = self.get_report(profile_id,report_id)        
-        self.file = self.get_last_file(profile_id,report_id)        
-        self.file_id = self.file['id']
-    
+        
+        try:
+            self.file = self.get_last_file(profile_id,report_id)        
+            self.file_id = self.file.get('id')
+        except:
+            self.file = None
     def get_report(self,profile_id,report_id):
         request = self.service.reports().get(profileId=profile_id,reportId=report_id)
         resp = request.execute()
@@ -60,6 +73,7 @@ class CampaignManagerReport:
         resp = request.execute()
         self.file = resp
         self.status = self.file['status']
+        return self.status
     
     def download_file(self):
         CHUNK_SIZE = 32 * 1024 * 1024
@@ -87,21 +101,26 @@ class CampaignManagerReport:
 
             while download_finished is False:
                 _, download_finished = downloader.next_chunk()
+        self.file_name = file_name
         return file_name
 
-
-def clean_dcm_file(csvobj):
+def clean_dcm_file(filename):
     data = []
     write = False
-    reader = csv.reader(csvobj, delimiter=',')
-    for row in reader:
-        if write == True:
-            data.append(row)        
-        elif row == ['Report Fields']:
-            write = True
+    with open(filename,'r') as f:
+        reader = csv.reader(f, delimiter=',')
 
-    if data[-1][0] == 'Grand Total:':
-        data.pop()
-    return data
+        for row in reader:
+            if write == True:
+                data.append(row)        
+            elif row == ['Report Fields']:
+                write = True
+
+        if data[-1][0] == 'Grand Total:':
+            data.pop()
+
+    with open(filename, "w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerows(data)
 
 ## Implement saving cleaned file ^^
