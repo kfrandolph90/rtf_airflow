@@ -33,7 +33,7 @@ class BigQuery:
         query_job = self.client.query(query,location='US',job_config=job_config)
         return query_job.result() 
     
-    def load_from_gcs(self,dataset_id,file_uri,schema,dest_table,mode=None,ext=".csv",**kwargs):
+    def load_from_gcs(self,dataset_id,file_uri,dest_table,mode=None,ext="csv",**kwargs):
         """
         Schema expects list of dictionaries contain columns with 'name' and 'type' keyss
         """
@@ -46,22 +46,24 @@ class BigQuery:
             job_config.write_disposition = bigquery.WriteDisposition.WRITE_EMPTY        
         else:
             job_config.write_disposition = bigquery.WriteDisposition.WRITE_TRUNCATE
-            
-        bq_schema = []
-    
-        for col in schema:
-            bq_schema.append(bigquery.SchemaField(col.get('name'),col.get('type')))
-            
-        job_config.schema = bq_schema
         
-        ## Implement extension check here
         
+        
+
         if ext=="json":
             job_config.source_format = bigquery.SourceFormat.NEWLINE_DELIMITED_JSON
         else:
             job_config.source_format = bigquery.SourceFormat.CSV
-            
-        
+         
+        ##Optional
+        if kwargs.get("schema"):
+            bq_schema = []
+            for col in schema:
+                bq_schema.append(bigquery.SchemaField(col.get('name'),col.get('type')))
+                
+            job_config.schema = bq_schema
+        else:
+            job_config.autodetect = True
         
         
         if kwargs.get("skip_rows"):
