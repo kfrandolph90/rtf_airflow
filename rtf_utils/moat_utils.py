@@ -11,10 +11,9 @@ class MoatTile:
     
     base_metrics = ["impressions_analyzed",
                     "susp_human",
-                    "human_and_viewable"
-                    "susp_bot_geo_perc"] 
+                    "human_and_viewable"] 
 
-    vid_metrics = [ "player_vis_and_aud_on_complete_sum",
+    vid_metrics = [ "player_vis_and_aud_on_complete_sum",                   
                     "player_audible_on_complete_sum",
                     "player_visible_on_complete_sum",
                     "reached_first_quart_sum",
@@ -110,7 +109,7 @@ class MoatTile:
             logging.info("No Data Bro!")
             return None
             
-    def get_data(self, start_date, end_date,token):
+    def get_data(self, start_date, end_date,token,response=False):
         self.filename = str(self.brandid) + "_" + self.name + ".json"
         
         fields = self.dimensions + self.metrics
@@ -134,11 +133,17 @@ class MoatTile:
         
         if self.filters:
             self.query.update(self.filters)
-            
+        
         resp = self.request(self.query,token)
         
+        if response == True:
+            return resp
+            
+            
+        
+        
         if resp.get('data_available') == True:
-            print("data avail!")
+            print("Data Available, Storing")
             self.save_json_newline(resp.get('results').get('details'))
             return self.filename
         else:
