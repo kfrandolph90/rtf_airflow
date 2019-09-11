@@ -33,7 +33,7 @@ class BigQuery:
         query_job = self.client.query(query,location='US',job_config=job_config)
         return query_job.result() 
     
-    def load_from_gcs(self,dataset_id,file_uri,dest_table,mode=None,ext="csv",**kwargs):
+    def load_from_gcs(self,dataset_id,file_uri,dest_table,schema=None,mode=None,ext="csv",**kwargs):
         """
         Schema expects list of dictionaries contain columns with 'name' and 'type' keyss
         """
@@ -56,7 +56,8 @@ class BigQuery:
             job_config.source_format = bigquery.SourceFormat.CSV
          
         ##Optional
-        if kwargs.get("schema"):
+
+        if schema:
             bq_schema = []
             for col in schema:
                 bq_schema.append(bigquery.SchemaField(col.get('name'),col.get('type')))

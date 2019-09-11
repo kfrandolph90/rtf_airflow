@@ -44,7 +44,6 @@ class CampaignManagerReport:
             self.file_id = self.file.get('id')
         except:
             self.file = None
-    
     def get_report(self,profile_id,report_id):
         request = self.service.reports().get(profileId=profile_id,reportId=report_id)
         resp = request.execute()

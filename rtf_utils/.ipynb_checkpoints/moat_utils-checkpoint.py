@@ -46,7 +46,7 @@ class MoatTile:
             
         if self.tile_type == "disp":
             self.metrics = MoatTile.base_metrics + MoatTile.disp_metrics
-        elif self.tile_type == "video" or "vid":
+        elif self.tile_type == "vid":
             self.metrics = MoatTile.base_metrics + MoatTile.vid_metrics
     
     
