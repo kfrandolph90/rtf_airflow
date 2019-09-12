@@ -4,9 +4,14 @@ from datetime import datetime,timedelta
 
 from essence.analytics.platform import securedcredentials as secure_creds
 
-from RTF.rtf_utils.dfa_utils import (CampaignManagerReport, clean_dcm_file,
-                                 get_dfa_report)
-from RTF.rtf_utils.gcp_utils import BigQuery, CloudStorage
+try:
+    from RTF.rtf_utils.dfa_utils import (CampaignManagerReport, clean_dcm_file,
+                                    get_dfa_report)
+    from RTF.rtf_utils.gcp_utils import BigQuery, CloudStorage
+except:
+    from rtf_utils.dfa_utils import (CampaignManagerReport, clean_dcm_file,
+                                    get_dfa_report)
+    from rtf_utils.gcp_utils import BigQuery, CloudStorage
 
 bucket_name = 'rtf_staging'
 PROJECT_ID='essence-analytics-dwh'
@@ -15,14 +20,15 @@ service_account_email='131786951123-compute@developer.gserviceaccount.com'
 
 
 def dfa_report_extract(report_id,**context):
-    execution_date = context['execution_date']
+    if context.get('execution_date'):
+         ## pull execution date - 1 (6hrs b/c airflow in UTC)
+        execution_date = context['execution_date']
+        reporting_datetime = (execution_date - timedelta(days=1,hours=6)).strftime('%Y-%m-%d')    
+        start_date = end_date = reporting_datetime
 
-
-    ## pull execution date - 1 (6hrs b/c airflow in UTC)
-    reporting_datetime = (execution_date - timedelta(days=1,hours=6)).strftime('%Y-%m-%d')
-    
-    start_date = end_date = reporting_datetime
-    
+    else:
+        start_date = context['start_date']
+        end_date = context['end_date']
     
     credentialsFromVault=secure_creds.getCredentialsFromEssenceVault(service_account_email)
     
@@ -37,7 +43,10 @@ def dfa_report_extract(report_id,**context):
     gcs = CloudStorage(credentialsFromVault)
     folder = "brand_reporting/"
     
-    destination_blob_name = folder + reporting_datetime + "_" + local_filename
+    if context.get('execution_date'):
+        destination_blob_name = folder + reporting_datetime + "_" + local_filename
+    else:
+        destination_blob_name = folder + end_date + "_" + local_filename
 
     print("Upload File")
     
