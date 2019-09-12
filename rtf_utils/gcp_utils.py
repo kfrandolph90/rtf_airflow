@@ -54,6 +54,7 @@ class BigQuery:
             job_config.source_format = bigquery.SourceFormat.NEWLINE_DELIMITED_JSON
         else:
             job_config.source_format = bigquery.SourceFormat.CSV
+            job_config.field_delimiter = ","
          
         ##Optional
 
@@ -75,7 +76,7 @@ class BigQuery:
                                                     location="US",  
                                                     job_config=job_config)
         
-        return load_job.result()
+        return load_job
 
 class CloudStorage:
     def __init__(self,creds):
