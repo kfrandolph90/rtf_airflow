@@ -61,15 +61,15 @@ class CampaignManagerReport:
         resp = request.execute()
         self.file = resp        
     
-    def patch_report(self,patched_report):
-        request = self.service.reports().patch(profileId=self.profile_id,reportId=self.report_id, body=patched_report)
+    def patch_report(self):
+        request = self.service.reports().patch(profileId=self.profile_id,reportId=self.report_id, body=self.report)
         resp = request.execute()
         self.get_report(self)
         
         
     def set_date_range(self,start_date,end_date):
         self.report['criteria']['dateRange'] = {"startDate":start_date,"endDate":end_date,"relativeDateRange":None}        
-        self.patch_report(self.report)
+        self.patch_report(self)
         
     def get_report_status(self):
         request = self.service.files().get(reportId=self.report_id,fileId=self.file['id'])

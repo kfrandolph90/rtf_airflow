@@ -1,6 +1,6 @@
 import json
 import os
-from datetime import datetime
+from datetime import datetime,timedelta
 
 from essence.analytics.platform import securedcredentials as secure_creds
 
@@ -15,8 +15,14 @@ service_account_email='131786951123-compute@developer.gserviceaccount.com'
 
 
 def dfa_report_extract(report_id,**context):
-    start_date = context['ds']
-    end_date = context['ds']
+    execution_date = context['execution_date']
+
+
+    ## pull execution date - 1 (6hrs b/c airflow in UTC)
+    reporting_datetime = (execution_date - timedelta(days=1,hours=6)).strftime('%Y-%m-%d')
+    
+    start_date = end_date = reporting_datetime
+    
     
     credentialsFromVault=secure_creds.getCredentialsFromEssenceVault(service_account_email)
     
@@ -30,7 +36,8 @@ def dfa_report_extract(report_id,**context):
     print("Auth GCS")
     gcs = CloudStorage(credentialsFromVault)
     folder = "brand_reporting/"
-    destination_blob_name = folder + local_filename
+    
+    destination_blob_name = folder + reporting_datetime + "_" + local_filename
 
     print("Upload File")
     
@@ -41,11 +48,14 @@ def dfa_report_extract(report_id,**context):
     print("Clean Up Local")
     os.remove(local_filename)
     
-    return "gs://" + stored_blob.bucket.name + "/" + stored_blob.name
+    return (stored_blob.bucket.name,stored_blob.name)
 
 
 def dfa_report_load(pull_task_id,dataset_table,schema=None,**context):
-    file_uri = context['ti'].xcom_pull(task_ids=pull_task_id)
+    blob = context['ti'].xcom_pull(task_ids=pull_task_id)
+    blob_bucket_name, blob_name = blob
+
+    file_uri = "gs://" +  blob_bucket_name + "/" + blob_name
     
     print("Get Creds from Vault")
     
@@ -59,3 +69,18 @@ def dfa_report_load(pull_task_id,dataset_table,schema=None,**context):
     
     print("Load to BQ")
     bq.load_from_gcs(dataset_id,file_uri,dest_table,mode='Append')
+
+def clean_up(pull_task_id,**context):
+    """
+    move file to gcs processed folder
+    """
+    blob = context['ti'].xcom_pull(task_ids=pull_task_id)
+    blob_bucket_name, blob_name = blob
+
+    
+    
+    credentialsFromVault=secure_creds.getCredentialsFromEssenceVault(service_account_email)
+    gcs = CloudStorage(credentialsFromVault)
+
+    gcs.delete_blob(blob_bucket_name,blob_name)
+ 
