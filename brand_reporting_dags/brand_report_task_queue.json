@@ -34,13 +34,21 @@
             {
                "name":"verification_report",
                "reportId":631165400,
-               "profileId":5096586
+               "profileId":5096586,
+               "dest":"rtf_brand_reporting.DCM_contentVerification"
             },
             {
                "name":"video_player_size",
                "reportId":632709822,
-               "profileId":5096586
-            }
+               "profileId":5096586,
+               "dest":"rtf_brand_reporting.DCM_playerSize"
+            },
+            {
+                "name":"geo_report",
+                "reportId":633170439,
+                "profileId":5096586,
+                "dest":"rtf_brand_reporting.001_DCM_GEO"
+             }
          ],
          "dataLabTasks":[
             {
@@ -50,6 +58,32 @@
                "filename":"datalabExport1234.csv"
             }
          ]
-      }
+      },
+        {
+           "name":"FastFollow",
+           "startDate":"2019-07-01",
+           "endDate":"2019-09-30",
+           "moatTasks":[
+
+           ],
+            "dcmTasks":[
+                {
+                   "name":"verification_report",
+                   "reportId":636704399,
+                   "profileId":5096586
+                },
+                {
+                   "name":"video_player_size",
+                   "reportId":636704652,
+                   "profileId":5096586
+                },
+                {
+                    "name":"geo_report",
+                    "reportId":636704484,
+                    "profileId":5096586
+                 }
+           ]
+        }
+    
    ]
 }
