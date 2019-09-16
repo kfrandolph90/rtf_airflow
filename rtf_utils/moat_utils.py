@@ -5,8 +5,6 @@ import logging
 import time
 from math import ceil
 
-
-
 class MoatTile:
     
     base_metrics = ["impressions_analyzed",
@@ -28,17 +26,34 @@ class MoatTile:
     disp_metrics = ["iva",
                     "moat_score"]
 
-    def __init__(self, tile_id, tile_type, name, level_filters=None, dimensions=None, **kwargs):
+    tiles_meta = {
+        13332:{'type':'video','name':'V_dcm-master'},
+        2698:{'type':'video','name':'V_google_na'},
+        6195505:{'type':'video','name':'V_facebook_na'},
+        13120:{'type':'video','name':'V_instagram'},
+        6195511:{'type':'video','name':'V_instagram-stories_na'},
+        6142389:{'type':'video','name':'V_snapchat'},
+        6146664:{'type':'video','name':'V_hulu'},
+        6178833:{'type':'video','name':'V_youtube-reserve-programmatic'},
+        6179366:{'type':'video','name':'V_youtube-reserve'},
+        6180313:{'type':'video','name':'V_hulu-in-app'},
+        6195543:{'type':'video','name':'V_twitter_na'},
+        13386:{'type':'video','name':'V_youtube-trueview_na'},
+        2506:{'type':'disp','name':'D_google_na'},
+        6195541:{'type':'disp','name':'D_twitter_na'},
+        6188035:{'type':'disp','name':'D_instagram'},
+        6195427:{'type':'disp','name':'D_instagram-stories_na'},
+        6195503:{'type':'disp','name':'D_facebook-ext-metrics_na'}
+        }
+
+    def __init__(self, tile_id, level_filters=None, dimensions=None, **kwargs):
         self.brandid = tile_id
-        self.tile_type = tile_type
-        self.name = name
+        self.tile_type = MoatTile.tiles[tile_id]['type']
+        self.name = MoatTile.tiles[tile_id]['name']
         self.filters = level_filters
         self.last_request_time = None
         self.time_since_last_request = None
-        
-        #self.campaigns = campaigns
-        
-        
+   
         if not dimensions:
             self.dimensions = ["level1"]
         else:
@@ -49,6 +64,8 @@ class MoatTile:
         elif self.tile_type == "video" or "vid":
             self.metrics = MoatTile.base_metrics + MoatTile.vid_metrics
     
+    def __str__(self):
+        return "Moat Tile {} - {} ".format(self.brandid,self.name)
     
     def request(self,query,token): 
         logging.info("API Request Time")
@@ -84,9 +101,7 @@ class MoatTile:
             return
         
         self.last_request_time = time.time()
-        
-        
-    
+
     def clean_row(row):
         for k,v in row.items():
             if k == "5_sec_in_view_impressions":
@@ -110,6 +125,21 @@ class MoatTile:
             return None
             
     def get_data(self, start_date, end_date,token,response=False):
+        """
+        Gets data for tile dimenions/filters within data range. 
+
+        Cleans and saves file locally
+        
+        Args:
+            start_date (str): request start date in YYYYMMDD
+            end_date (str): request end date in YYYYMMDD        
+            token (str): API token
+
+        Returns:
+            filename (str): filename of local file in working dir 
+
+        """
+        
         self.filename = str(self.brandid) + "_" + self.name + ".json"
         
         fields = self.dimensions + self.metrics
@@ -122,6 +152,7 @@ class MoatTile:
                 } 
         
         """
+        TODO: Implement multiple filters behavior
         if self.filters:
             for dimension,values in self.filters.items():
                 if type(values) == list:
@@ -138,9 +169,6 @@ class MoatTile:
         
         if response == True:
             return resp
-            
-            
-        
         
         if resp.get('data_available') == True:
             print("Data Available, Storing")
