@@ -60,7 +60,7 @@ for i,campaign in enumerate(campaigns):
             dest = task['dest']
 
         else:
-            dest = ("RTF_DWH_CampaignReporting." + 
+            dest = ("RTF_DWH_CampaignManager." + 
             task['name'] + "_" +
             datetime.now().strftime('%Y%m%d'))
         
