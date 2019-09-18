@@ -22,8 +22,6 @@ class CampaignManagerReport:
     Reference:
     131786951123-compute@developer.gserviceaccount.com ----> 5096586
     
-    
-    
     """
     
     api_name = 'dfareporting'

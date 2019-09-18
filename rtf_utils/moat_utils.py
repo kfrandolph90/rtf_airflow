@@ -48,8 +48,8 @@ class MoatTile:
 
     def __init__(self, tile_id, level_filters=None, dimensions=None, **kwargs):
         self.brandid = tile_id
-        self.tile_type = MoatTile.tiles[tile_id]['type']
-        self.name = MoatTile.tiles[tile_id]['name']
+        self.tile_type = MoatTile.tiles_meta[tile_id]['type']
+        self.name = MoatTile.tiles_meta[tile_id]['name']
         self.filters = level_filters
         self.last_request_time = None
         self.time_since_last_request = None
