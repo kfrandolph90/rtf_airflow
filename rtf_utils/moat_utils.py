@@ -45,7 +45,10 @@ class MoatTile:
         6195541:{'type':'disp','name':'D_twitter_na'},
         6188035:{'type':'disp','name':'D_instagram'},
         6195427:{'type':'disp','name':'D_instagram-stories_na'},
-        6195503:{'type':'disp','name':'D_facebook-ext-metrics_na'}
+        6195503:{'type':'disp','name':'D_facebook-ext-metrics_na'},
+        6196284:{'type':'video','name':'V_youtube_progres'},
+
+
         }
 
     def __init__(self, tile_id, level_filter=None, dimensions=None, **kwargs):
@@ -114,7 +117,7 @@ class MoatTile:
         return row
     
     def save_json_newline(self,data):
-        if data != []:
+        if data != []: ## this might be failing
             with open(self.filename, "w") as f:
                 rows_cleaned = [self.clean_row(row) for row in data]       
                 rows = [json.dumps(row) for row in rows_cleaned]
