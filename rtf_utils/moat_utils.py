@@ -8,8 +8,10 @@ from math import ceil
 class MoatTile:
     
     base_metrics = ["impressions_analyzed",
+                    "loads_unfiltered",
                     "susp_human",
-                    "human_and_viewable"] 
+                    "human_and_viewable",
+                    ] 
 
     vid_metrics = [ "player_vis_and_aud_on_complete_sum",                   
                     "player_audible_on_complete_sum",
@@ -46,16 +48,16 @@ class MoatTile:
         6195503:{'type':'disp','name':'D_facebook-ext-metrics_na'}
         }
 
-    def __init__(self, tile_id, level_filters=None, dimensions=None, **kwargs):
+    def __init__(self, tile_id, level_filter=None, dimensions=None, **kwargs):
         self.brandid = tile_id
         self.tile_type = MoatTile.tiles_meta[tile_id]['type']
         self.name = MoatTile.tiles_meta[tile_id]['name']
-        self.filters = level_filters
+        self.filters = level_filter
         self.last_request_time = None
         self.time_since_last_request = None
-   
+
         if not dimensions:
-            self.dimensions = ["level1"]
+            self.dimensions = ["level1","level2","level3","level4"]
         else:
             self.dimensions = dimensions
             
@@ -102,7 +104,7 @@ class MoatTile:
         
         self.last_request_time = time.time()
 
-    def clean_row(row):
+    def clean_row(self,row):
         for k,v in row.items():
             if k == "5_sec_in_view_impressions":
                 row["_5_sec_in_view_impressions"] = v
@@ -114,7 +116,7 @@ class MoatTile:
     def save_json_newline(self,data):
         if data != []:
             with open(self.filename, "w") as f:
-                rows_cleaned = [clean_row(row) for row in data]       
+                rows_cleaned = [self.clean_row(row) for row in data]       
                 rows = [json.dumps(row) for row in rows_cleaned]
                 row_str = '\n'.join(rows)
                 f.write(row_str)
@@ -140,7 +142,11 @@ class MoatTile:
 
         """
         
-        self.filename = str(self.brandid) + "_" + self.name + ".json"
+        if self.filters:
+            filter_value = [*self.filters.values()][0]
+            self.filename = "Moat_{}_{}.json".format(self.brandid,filter_value)
+        else:
+            self.filename = "Moat_{}.json".format(self.brandid)
         
         fields = self.dimensions + self.metrics
         
@@ -182,21 +188,3 @@ class MoatTile:
         
         
         
-        
-def clean_row(row):
-    for k,v in row.items():
-        if k == "5_sec_in_view_impressions":
-            row["_5_sec_in_view_impressions"] = v
-            del row["5_sec_in_view_impressions"]
-        if k == "level3_id" and v == "ghostery":
-            row[k] = ''
-    return row
-
-def format_json_newline(data):
-    buf = StringIO()
-    rows_cleaned = [clean_row(row) for row in data]
-    rows = [json.dumps(row) for row in rows_cleaned]
-    row_str = '\n'.join(rows)    
-    buf.write(row_str)
-    buf.seek(0)
-    return buf.getvalue()

@@ -88,7 +88,7 @@ class BigQuery:
                                                     location="US",  
                                                     job_config=job_config)
         
-        return load_job
+        load_job.result()
 
 class CloudStorage:
     def __init__(self,creds):
@@ -118,6 +118,8 @@ class CloudStorage:
             blob.upload_from_filename(source)
 
         logging.info('File uploaded as {}.'.format(destination_blob_name))
+
+        return blob
 
     def copy_blob(self,bucket_name, blob_name, new_bucket_name, new_blob_name):
         """Copies a blob from one bucket to another with a new name."""
