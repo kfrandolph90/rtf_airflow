@@ -28,6 +28,10 @@ class MoatTile:
     disp_metrics = ["iva",
                     "moat_score"]
 
+    """
+    TODO: Update BQ friendly names in tiles_meta
+    
+    """
     tiles_meta = {
         13332:{'type':'video','name':'V_dcm-master'},
         2698:{'type':'video','name':'V_google_na'},
@@ -94,10 +98,14 @@ class MoatTile:
             if resp.status_code == 200:
                 r = resp.json()
                 return r
-                #self.data.extend(details)
-                #logging.info("Stored {} entries for {}".format(len(data),campaign))
-            elif resp.status_code == 400:
-                logging.error("Ya Goofed. Resp:{}".format(query))            
+
+            elif resp.status_code != 400:
+                logging.error("HTTP Error: {}".format(resp.status_code))
+                logging.error(resp.json())
+                return None      
+            else:
+                logging.error(resp.json())
+                return None            
             
             
         except Exception as e:
@@ -126,7 +134,7 @@ class MoatTile:
                 logging.info("{} Saved".format(self.filename))
                 return self.filename
         else:
-            logging.info("No Data Bro!")
+            logging.info("Empty Data")
             return None
             
     def get_data(self, start_date, end_date,token,response=False):
@@ -141,8 +149,9 @@ class MoatTile:
             token (str): API token
 
         Returns:
-            filename (str): filename of local file in working dir 
-
+            filename (str): filename of local file in working dir
+            or
+            None : if request fails or data set is empty
         """
         
         if self.filters:
@@ -176,16 +185,14 @@ class MoatTile:
         
         resp = self.request(self.query,token)
         
-        if response == True:
-            return resp
+        logging.debug(resp)
         
-        if resp.get('data_available') == True:
-            print("Data Available, Storing")
-            self.save_json_newline(resp.get('results').get('details'))
-            return self.filename
+        if resp and resp.get('data_available') == True:
+            return self.save_json_newline(resp.get('results').get('details')) #should return none if data empty
+
         else:
             logging.info('No Data for {} in that date range'.format(self.query.get('brandId')))
-            return
+            return None
         
 
         
