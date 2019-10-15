@@ -167,7 +167,6 @@ def get_dfa_report(creds,report_id,start_date,end_date,profile_id = 5096586):
             report.get_report_status()
             tries +=1
 
-            if
 
             if report.file['status'] == 'REPORT_AVAILABLE':
                 print("Print Report Available!")

@@ -156,9 +156,9 @@ class MoatTile:
         
         if self.filters:
             filter_value = [*self.filters.values()][0]
-            self.filename = "Moat_{}_{}.json".format(self.brandid,filter_value)
+            self.filename = "{}_{}.json".format(self.brandid,filter_value)
         else:
-            self.filename = "Moat_{}.json".format(self.brandid)
+            self.filename = "{}.json".format(self.brandid)
         
         fields = self.dimensions + self.metrics
         
