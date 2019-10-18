@@ -10,16 +10,20 @@ RTF - Kyle Randolph - kyle.randolph@essenceglobal.com
     - Filename convention: `<moat tile>/<moat tile id>_<filter ID>_<date pulled>`
 - All files from a given tile are loaded into BQ (with appropriate schema) with the date of the pull
 """
+## Base Lib imports
+import json
+import logging
+from datetime import datetime, timedelta
 
+## Import Airflow operators and models
 from airflow import DAG
+from airflow.contrib.operators.gcs_to_bq import GoogleCloudStorageToBigQueryOperator
 from airflow.models import Variable
 from airflow.operators.dummy_operator import DummyOperator
-from airflow.contrib.operators.gcs_to_bq import GoogleCloudStorageToBigQueryOperator
-from datetime import datetime, timedelta
-import json
 
+## Import RTF utils
 from RTF.rtf_utils.moat_operator import Moat_To_GCS
-import logging
+from RTF.rtf_utils.moat_utils import moat_schemas
 
 default_args = {
     'owner': 'Reporting Task Force',
@@ -42,31 +46,8 @@ dag = DAG('RTF_BrandReporting_Moat_DAG',
 
 dag.doc_md = __doc__
 
-
 tasks = Variable.get('moat_tasks', deserialize_json=True)
-
 logging.info("Loaded Tasks")
-
-schema = [
-{'name':'date','type':'DATE','mode':'REQUIRED'},
-{'name':'level1_id','type':'INTEGER','mode':'REQUIRED'},
-{'name':'level1_label','type':'STRING', 'mode':'REQUIRED'},
-{'name':'level3_id','type':'INTEGER', 'mode':'REQUIRED'},
-{'name':'level3_label','type':'STRING', 'mode':'REQUIRED'},
-{'name':'loads_unfiltered', 'type':'INTEGER', 'mode':'NULLABLE'},
-{'name':'impressions_analyzed', 'type':'INTEGER', 'mode':'NULLABLE'}, 
-{'name':'susp_human', 'type':'INTEGER', 'mode':'NULLABLE'},  
-{'name':'susp_valid', 'type':'INTEGER', 'mode':'NULLABLE'}, 
-{'name':'human_and_viewable', 'type':'INTEGER', 'mode':'NULLABLE'},
-{'name':'valid_and_viewable', 'type':'INTEGER', 'mode':'NULLABLE'},
-{'name':'moat_score', 'type':'INTEGER', 'mode':'NULLABLE'},
-{'name':'iva', 'type':'INTEGER', 'mode':'NULLABLE'},
-
-]
-
-
-
-end_task = DummyOperator(task_id='end_task', retries=0, dag=dag)
 
 for tile, campaigns in tasks.items():
     tile = int(tile)  ##TODO: tile type on variable load
@@ -76,13 +57,12 @@ for tile, campaigns in tasks.items():
                                                 bucket= 'rtf_staging',
                                                 source_objects = ['{}/*'.format(tile)],
                                                 destination_project_dataset_table = 'essence-analytics-dwh:RTF_DWH_Moat.{}_'.format(tile) + '{{ ds_nodash }}',
-                                                schema_fields = schema, ## replace with GCS
+                                                schema_fields = moat_schemas.get(tile),
                                                 source_format = 'NEWLINE_DELIMITED_JSON',
                                                 create_disposition = 'CREATE_IF_NEEDED',
                                                 write_disposition = 'WRITE_TRUNCATE',
                                                 autodetect = False,
                                                 dag=dag)
-    store_task.set_downstream(end_task)
     
     for campaign in campaigns:
         level_filter, dimensions = campaign #unpack tuple
@@ -104,13 +84,3 @@ for tile, campaigns in tasks.items():
         
         start_task.set_downstream(request_task)
         request_task.set_downstream(store_task)
-
-    
-
-
-    
-   
-   
-    
-
-    

@@ -101,7 +101,7 @@ class MoatTile:
                 r = resp.json()
                 return r 
             else:
-                logging.error("Succesful, non-200 resp".format(resp.status_code))
+                logging.error("Succesful, non-200 resp {}".format(resp.status_code))
                 raise Exception## will raise exception for 4xx/3xx error codes   
             
         except Exception as e:
@@ -187,8 +187,87 @@ class MoatTile:
         else:
             logging.info('No Data for {} in that date range'.format(self.query.get('brandId')))
             return None
-        
 
-        
-        
-        
+
+##### Moat Schemas for Brand Reporting #####
+
+base_schema = [
+{"name":"loads_unfiltered","type": "INTEGER","mode": "NULLABLE"},
+{"name":"impressions_analyzed","type": "INTEGER","mode": "NULLABLE"},
+{"name":"susp_human","type": "FLOAT","mode": "NULLABLE"},
+{"name":"susp_valid","type": "FLOAT","mode": "NULLABLE"},
+{"name":"human_and_viewable","type": "INTEGER","mode": "NULLABLE"},
+{"name":"valid_and_viewable","type": "INTEGER","mode": "NULLABLE"}
+]
+
+video_schema = [   
+{"name":"reached_first_quart_sum","type": "INTEGER","mode": "NULLABLE"},
+{"name":"reached_second_quart_sum","type": "INTEGER","mode": "NULLABLE"},
+{"name":"reached_third_quart_sum","type": "INTEGER","mode": "NULLABLE"},
+{"name":"reached_complete_sum","type": "INTEGER","mode": "NULLABLE"},
+{"name":"player_audible_on_complete_sum","type": "INTEGER","mode": "NULLABLE"},
+{"name":"player_visible_on_complete_sum","type": "INTEGER","mode": "NULLABLE"},
+{"name":"player_audible_full_vis_half_time_sum","type": "INTEGER","mode": "NULLABLE"},
+{"name":"player_vis_and_aud_on_complete_sum","type": "INTEGER","mode": "NULLABLE"},
+]
+
+
+moat_schemas = {
+
+2506 :[
+{"name":"date","type":"DATE","mode":"REQUIRED"},
+{"name":"level1_id","type":"INTEGER","mode":"REQUIRED"},
+{"name":"level1_label","type":"STRING", "mode":"REQUIRED"},
+{"name":"level3_id","type":"INTEGER", "mode":"REQUIRED"},
+{"name":"level3_label","type":"STRING", "mode":"REQUIRED"}] + base_schema + [
+{"name":"moat_score", "type":"INTEGER", "mode":"NULLABLE"},
+{"name":"iva", "type":"INTEGER", "mode":"NULLABLE"}
+],   
+
+6179366 : [
+{"name":"date","type": "DATE","mode": "REQUIRED"},
+{"name":"level2_id","type": "INTEGER","mode": "REQUIRED"},
+{"name":"level2_label","type": "STRING","mode": "REQUIRED"},
+{"name":"level4_id","type": "INTEGER","mode": "REQUIRED"},
+{"name":"level4_label","type": "STRING","mode": "REQUIRED"}] + base_schema + [
+{"name":"_5_sec_in_view_impressions","type": "INTEGER","mode": "NULLABLE"},
+{"name":"susp_human_and_inview_gm_meas_sum","type": "FLOAT","mode": "NULLABLE"},
+{"name":"susp_valid_and_inview_gm_meas_sum","type": "FLOAT","mode": "NULLABLE"}] + video_schema,
+
+
+6178833 : [
+{"name":"date","type": "DATE","mode": "REQUIRED"},
+{"name":"level1_id","type": "INTEGER","mode": "REQUIRED"},
+{"name":"level1_label","type": "STRING","mode": "REQUIRED"},
+{"name":"level4_id","type": "INTEGER","mode": "REQUIRED"},
+{"name":"level4_label","type": "STRING","mode": "REQUIRED"}] + base_schema + [
+{"name":"_5_sec_in_view_impressions","type": "INTEGER","mode": "NULLABLE"},
+{"name":"susp_human_and_inview_gm_meas_sum","type": "FLOAT","mode": "NULLABLE"},
+{"name":"susp_valid_and_inview_gm_meas_sum","type": "FLOAT","mode": "NULLABLE"}
+] + video_schema,
+
+13386: [
+{"name":"date","type": "DATE","mode": "REQUIRED"},
+{"name":"level1_id","type": "INTEGER","mode": "REQUIRED"},
+{"name":"level1_label","type": "STRING","mode": "REQUIRED"},
+{"name":"level4_id","type": "INTEGER","mode": "REQUIRED"},
+{"name":"level4_label","type": "STRING","mode": "REQUIRED"}] + base_schema + [
+{"name":"_5_sec_in_view_impressions","type": "INTEGER","mode": "NULLABLE"},
+{"name":"susp_human_and_inview_gm_meas_sum","type": "FLOAT","mode": "NULLABLE"},
+{"name":"susp_valid_and_inview_gm_meas_sum","type": "FLOAT","mode": "NULLABLE"}
+] + video_schema,
+
+2698 :[
+{"name":"date","type": "DATE","mode": "REQUIRED"}, # make required
+{"name":"level1_id","type": "INTEGER","mode": "REQUIRED"},
+{"name":"level1_label","type": "STRING","mode": "REQUIRED"},
+{"name":"level3_id","type": "INTEGER","mode": "REQUIRED"},
+{"name":"level3_label","type": "STRING","mode": "REQUIRED"}] + base_schema + 
+[
+{"name":"_5_sec_in_view_impressions","type": "INTEGER","mode": "NULLABLE"},
+{"name":"avg_real_estate_perc","type": "FLOAT","mode": "NULLABLE"},
+{"name":"susp_human_and_inview_gm_meas_sum","type": "FLOAT","mode": "NULLABLE"},
+{"name":"susp_valid_and_inview_gm_meas_sum","type": "FLOAT","mode": "NULLABLE"}] + video_schema
+    }
+
+## Note: rest in schemas_json.py , need to finish later

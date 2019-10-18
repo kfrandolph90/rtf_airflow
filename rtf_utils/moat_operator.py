@@ -3,6 +3,7 @@ from airflow.contrib.hooks.gcs_hook import GoogleCloudStorageHook
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
 from airflow.models import Variable
+from airflow.exceptions import AirflowSkipException
 import logging
 import os
 import time
@@ -93,7 +94,7 @@ class Moat_To_GCS(BaseOperator):
 
         else:
             logging.error('No Response')
-            return
+            raise AirflowSkipException()
 
         file_tokens = [self.brand_id,filter_id,self.suffix]
 

@@ -1,10 +1,6 @@
 from google.cloud import bigquery
 
 
-
-
-
-
 base_schema = [
 bigquery.SchemaField("loads_unfiltered", "INTEGER", mode = "NULLABLE"),
 bigquery.SchemaField("impressions_analyzed", "INTEGER", mode = "NULLABLE"),
@@ -21,9 +17,6 @@ bigquery.SchemaField("player_audible_on_complete_sum", "FLOAT", mode = "NULLABLE
 bigquery.SchemaField("player_visible_on_complete_sum", "FLOAT", mode = "NULLABLE"),
 bigquery.SchemaField("player_audible_full_vis_half_time_sum", "FLOAT", mode = "NULLABLE"),
 bigquery.SchemaField("player_vis_and_aud_on_complete_sum", "FLOAT", mode = "NULLABLE"),
-
-
-
 ]
 
 

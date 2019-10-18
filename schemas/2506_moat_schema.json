@@ -1,0 +1,15 @@
+[
+    {"name":"date","type":"DATE","mode":"REQUIRED"},
+    {"name":"level1_id","type":"INTEGER","mode":"REQUIRED"},
+    {"name":"level1_label","type":"STRING", "mode":"REQUIRED"},
+    {"name":"level3_id","type":"INTEGER", "mode":"REQUIRED"},
+    {"name":"level3_label","type":"STRING", "mode":"REQUIRED"},
+    {"name":"loads_unfiltered", "type":"INTEGER", "mode":"NULLABLE"},
+    {"name":"impressions_analyzed", "type":"INTEGER", "mode":"NULLABLE"}, 
+    {"name":"susp_human", "type":"INTEGER", "mode":"NULLABLE"},  
+    {"name":"susp_valid", "type":"INTEGER", "mode":"NULLABLE"}, 
+    {"name":"human_and_viewable", "type":"INTEGER", "mode":"NULLABLE"},
+    {"name":"valid_and_viewable", "type":"INTEGER", "mode":"NULLABLE"},
+    {"name":"moat_score", "type":"INTEGER", "mode":"NULLABLE"},
+    {"name":"iva", "type":"INTEGER", "mode":"NULLABLE"}
+]
