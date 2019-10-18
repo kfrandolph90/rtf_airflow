@@ -1,11 +1,12 @@
-from moat_utils import MoatTile
-from airflow.gcp.hooks.gcs import GoogleCloudStorageHook
+from RTF.rtf_utils.moat_utils import MoatTile
+from airflow.contrib.hooks.gcs_hook import GoogleCloudStorageHook
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
 from airflow.models import Variable
-
-
-
+import logging
+import os
+import time
+import random
 
 class Moat_To_GCS(BaseOperator):
 
@@ -39,7 +40,7 @@ class Moat_To_GCS(BaseOperator):
 
     '''
 
-    template_fields = ('start_date', 'end_date','suffix')
+    template_fields = ('s', 'e','suffix')
     
     ui_color = '#EF8620'
 
@@ -47,8 +48,8 @@ class Moat_To_GCS(BaseOperator):
     def __init__(
             self,
             brand_id,
-            start_date,
-            end_date,
+            s,
+            e,
             level_filter=None,
             dimensions=None,
             bucket='rtf_staging',
@@ -60,8 +61,8 @@ class Moat_To_GCS(BaseOperator):
         
         # Moat Config
         self.brand_id = brand_id
-        self.start_date = start_date
-        self.end_date = end_date
+        self.s = s
+        self.e = e
         self.level_filter = level_filter
         self.dimensions = dimensions
 
@@ -75,14 +76,17 @@ class Moat_To_GCS(BaseOperator):
         logging.info('Instantiate Moat Tile')
         tile = MoatTile(self.brand_id,self.level_filter,self.dimensions)
 
-
-        logging.info('Fetch Token')
         token = Variable.get ('rtf_moat_token')
-        ## somehow get token
+        ## somehow get token in a better way
 
         logging.info('Fetch Token')
-        
-        filename = tile.get_data(self.start_date,self.end_date, token)
+
+        if self.level_filter:
+            filter_id = [*self.level_filter.values()][0]
+
+        time.sleep(random.randint(1,5)) # fuck shit up
+
+        filename = tile.get_data(self.s,self.e, token)
 
         if filename:
             logging.info('Response Saved Locally @ {}'.format(filename))
@@ -91,29 +95,27 @@ class Moat_To_GCS(BaseOperator):
             logging.error('No Response')
             return
 
-        if self.filter:
-            filter_id = [*self.filter.values()][0] ## this probably bad
-            blob_name = self.brand_id + '_' + filter_id + '_' + self.suffix + '.json'
-        else:
-            blob_name = self.brand_id + '_' + self.suffix + '.json'
-        
+        file_tokens = [self.brand_id,filter_id,self.suffix]
+
+        blob_name = "_".join([str(x) for x in file_tokens if x ])   ## PRETTY CLEVER KYLE
+
+        if self.prefix:
+            blob_name = str(self.prefix) + blob_name + '.json'
+
         hook = GoogleCloudStorageHook()
         
         hook.upload(
-            bucket_name = self.bucket,
-            object_name = blob_name,          
-            filename = self.filename
-        )
+            bucket = self.bucket,
+            object = blob_name,          
+            filename = filename
+        ) ## docs don't match repo
         
-        logging.info("{} uploaded to {}".format)
+        logging.info("{} uploaded to {}".format(blob_name,self.bucket))
+        os.remove(filename)
+        
+        logging.info("{} deleted from local".format(filename))
 
         return (self.bucket,blob_name) ## should get pushed to xcom if do_xcom_push is set to True in baseclass
-
-
-
-
-
-
 
 
 

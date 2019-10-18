@@ -17,8 +17,6 @@ bucket_name = 'rtf_staging'
 PROJECT_ID='essence-analytics-dwh'
 service_account_email='131786951123-compute@developer.gserviceaccount.com'
 
-
-
 def dfa_report_extract(report_id,**context):
     if context.get('execution_date'):
          ## pull execution date - 1 (6hrs b/c airflow in UTC)

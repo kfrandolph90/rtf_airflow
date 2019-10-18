@@ -1,5 +1,6 @@
 import json
 import requests
+from urllib3.exceptions import HTTPError
 from io import StringIO,FileIO
 import logging
 import time
@@ -51,9 +52,7 @@ class MoatTile:
         6195427:{'type':'disp','name':'D_instagram-stories_na'},
         6195503:{'type':'disp','name':'D_facebook-ext-metrics_na'},
         6196284:{'type':'video','name':'V_youtube_progres'},
-
-
-        }
+}
 
     def __init__(self, tile_id, level_filter=None, dimensions=None, **kwargs):
         self.brandid = tile_id
@@ -88,33 +87,28 @@ class MoatTile:
         
         auth_header = 'Bearer {}'.format(token)
         
-        try:
-            resp = requests.get('https://api.moat.com/1/stats.json',
+        
+        resp = requests.get('https://api.moat.com/1/stats.json',
                                 params=query,
                                 headers={'Authorization': auth_header,
                                             'User-agent': 'Essence Global 1.0'}
                                )
-            self.last_request_time = time.time()
-            if resp.status_code == 200:
-                r = resp.json()
-                return r
-
-            elif resp.status_code != 400:
-                logging.error("HTTP Error: {}".format(resp.status_code))
-                logging.error(resp.json())
-                return None      
-            else:
-                logging.error(resp.json())
-                return None            
-            
-            
-        except Exception as e:
-            print("bad news")
-            logging.error("Request Failure {}".format(e))
-            return
-        
         self.last_request_time = time.time()
 
+        try:
+            resp.raise_for_status()
+            if resp.status_code == 200:
+                r = resp.json()
+                return r 
+            else:
+                logging.error("Succesful, non-200 resp".format(resp.status_code))
+                raise Exception## will raise exception for 4xx/3xx error codes   
+            
+        except Exception as e:
+            logging.error(e)
+            logging.error(resp.headers)
+            raise Exception
+        
     def clean_row(self,row):
         for k,v in row.items():
             if k == "5_sec_in_view_impressions":
