@@ -1,10 +1,12 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 #   Some helpful wrappers for gcp
 #   RTF - Kyle.Randolph@essenceglobal.com
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+ 
 
 from google.cloud import storage,bigquery
 import logging
+
 
 
 """
@@ -88,7 +90,8 @@ class BigQuery:
                                                     location="US",  
                                                     job_config=job_config)
         
-        load_job.result()
+        #logging.info(load_job.job_id)
+        return load_job
 
 class CloudStorage:
     def __init__(self,creds):

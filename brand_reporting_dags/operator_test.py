@@ -7,7 +7,7 @@ RTF - Kyle Randolph - kyle.randolph@essenceglobal.com
 ##Details:
 - Dag will dynamically run a series of Moat API requests to build dataset need for brand reporting initiative.
 - Uses GCS hook to upload API response to folder w/ GC
-    - Filename convention: `<moat tile>/<moat tile id>_<filter ID>_<date pulled>`
+    - Filename convention: `<moat tile>/<moat tile id>_<filter IsD>_<date pulled>`
 - All files from a given tile are loaded into BQ (with appropriate schema) with the date of the pull
 """
 ## Base Lib imports

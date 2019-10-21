@@ -21,7 +21,6 @@ class MoatTile:
                     "reached_second_quart_sum",
                     "reached_third_quart_sum",
                     "reached_complete_sum",
-                    "avg_real_estate_perc",
                     "player_audible_full_vis_half_time_sum",
                     "5_sec_in_view_impressions",
                     "susp_human_and_inview_gm_meas_sum"]
@@ -37,6 +36,7 @@ class MoatTile:
         13332:{'type':'video','name':'V_dcm-master'},
         2698:{'type':'video','name':'V_google_na'},
         6195505:{'type':'video','name':'V_facebook_na'},
+        8268:{'type':'video','name':'V_facebook_master'},
         13120:{'type':'video','name':'V_instagram'},
         6195511:{'type':'video','name':'V_instagram-stories_na'},
         6142389:{'type':'video','name':'V_snapchat'},
@@ -189,16 +189,32 @@ class MoatTile:
             return None
 
 
-##### Moat Schemas for Brand Reporting #####
+##### Moat Base Schemas for Brand Reporting #####
+non_google_dimensions = [{"name":"date","type": "DATE","mode": "REQUIRED"},
+{"name":"level1_id","type": "INTEGER","mode": "REQUIRED"},
+{"name":"level1_label","type": "STRING","mode": "REQUIRED"},
+{"name":"level4_id","type": "INTEGER","mode": "REQUIRED"},
+{"name":"level4_label","type": "STRING","mode": "REQUIRED"}]
 
-base_schema = [
+
+google_dimensions = [
+{"name":"date","type":"DATE","mode":"REQUIRED"},
+{"name":"level1_id","type":"INTEGER","mode":"REQUIRED"},
+{"name":"level1_label","type":"STRING", "mode":"REQUIRED"},
+{"name":"level3_id","type":"STRING", "mode":"REQUIRED"},
+{"name":"level3_label","type":"STRING", "mode":"REQUIRED"}]
+
+
+fb_schema = [
 {"name":"loads_unfiltered","type": "INTEGER","mode": "NULLABLE"},
 {"name":"impressions_analyzed","type": "INTEGER","mode": "NULLABLE"},
-{"name":"susp_human","type": "FLOAT","mode": "NULLABLE"},
-{"name":"susp_valid","type": "FLOAT","mode": "NULLABLE"},
 {"name":"human_and_viewable","type": "INTEGER","mode": "NULLABLE"},
 {"name":"valid_and_viewable","type": "INTEGER","mode": "NULLABLE"}
 ]
+
+base_schema = fb_schema + [{"name":"susp_human","type": "FLOAT","mode": "NULLABLE"},
+{"name":"susp_valid","type": "FLOAT","mode": "NULLABLE"}]
+
 
 video_schema = [   
 {"name":"reached_first_quart_sum","type": "INTEGER","mode": "NULLABLE"},
@@ -209,21 +225,20 @@ video_schema = [
 {"name":"player_visible_on_complete_sum","type": "INTEGER","mode": "NULLABLE"},
 {"name":"player_audible_full_vis_half_time_sum","type": "INTEGER","mode": "NULLABLE"},
 {"name":"player_vis_and_aud_on_complete_sum","type": "INTEGER","mode": "NULLABLE"},
+{"name":"susp_human_and_inview_gm_meas_sum","type": "FLOAT","mode": "NULLABLE"},
+{"name":"susp_valid_and_inview_gm_meas_sum","type": "FLOAT","mode": "NULLABLE"}
 ]
 
 
 moat_schemas = {
-
-2506 :[
-{"name":"date","type":"DATE","mode":"REQUIRED"},
-{"name":"level1_id","type":"INTEGER","mode":"REQUIRED"},
-{"name":"level1_label","type":"STRING", "mode":"REQUIRED"},
-{"name":"level3_id","type":"INTEGER", "mode":"REQUIRED"},
-{"name":"level3_label","type":"STRING", "mode":"REQUIRED"}] + base_schema + [
-{"name":"moat_score", "type":"INTEGER", "mode":"NULLABLE"},
+###################### Display Tiles ######################
+2506 : google_dimensions + base_schema + [{"name":"moat_score", "type":"INTEGER", "mode":"NULLABLE"},
 {"name":"iva", "type":"INTEGER", "mode":"NULLABLE"}
 ],   
 
+6195503 : non_google_dimensions + fb_schema + [{"name":"iva", "type":"INTEGER", "mode":"NULLABLE"}],
+
+###################### Video Tiles ######################
 6179366 : [
 {"name":"date","type": "DATE","mode": "REQUIRED"},
 {"name":"level2_id","type": "INTEGER","mode": "REQUIRED"},
@@ -231,43 +246,20 @@ moat_schemas = {
 {"name":"level4_id","type": "INTEGER","mode": "REQUIRED"},
 {"name":"level4_label","type": "STRING","mode": "REQUIRED"}] + base_schema + [
 {"name":"_5_sec_in_view_impressions","type": "INTEGER","mode": "NULLABLE"},
-{"name":"susp_human_and_inview_gm_meas_sum","type": "FLOAT","mode": "NULLABLE"},
-{"name":"susp_valid_and_inview_gm_meas_sum","type": "FLOAT","mode": "NULLABLE"}] + video_schema,
-
-
-6178833 : [
-{"name":"date","type": "DATE","mode": "REQUIRED"},
-{"name":"level1_id","type": "INTEGER","mode": "REQUIRED"},
-{"name":"level1_label","type": "STRING","mode": "REQUIRED"},
-{"name":"level4_id","type": "INTEGER","mode": "REQUIRED"},
-{"name":"level4_label","type": "STRING","mode": "REQUIRED"}] + base_schema + [
-{"name":"_5_sec_in_view_impressions","type": "INTEGER","mode": "NULLABLE"},
-{"name":"susp_human_and_inview_gm_meas_sum","type": "FLOAT","mode": "NULLABLE"},
-{"name":"susp_valid_and_inview_gm_meas_sum","type": "FLOAT","mode": "NULLABLE"}
 ] + video_schema,
 
-13386: [
-{"name":"date","type": "DATE","mode": "REQUIRED"},
-{"name":"level1_id","type": "INTEGER","mode": "REQUIRED"},
-{"name":"level1_label","type": "STRING","mode": "REQUIRED"},
-{"name":"level4_id","type": "INTEGER","mode": "REQUIRED"},
-{"name":"level4_label","type": "STRING","mode": "REQUIRED"}] + base_schema + [
-{"name":"_5_sec_in_view_impressions","type": "INTEGER","mode": "NULLABLE"},
-{"name":"susp_human_and_inview_gm_meas_sum","type": "FLOAT","mode": "NULLABLE"},
-{"name":"susp_valid_and_inview_gm_meas_sum","type": "FLOAT","mode": "NULLABLE"}
-] + video_schema,
+6178833 : non_google_dimensions + base_schema + video_schema  + [
+{"name":"_5_sec_in_view_impressions","type": "INTEGER","mode": "NULLABLE"}],
 
-2698 :[
-{"name":"date","type": "DATE","mode": "REQUIRED"}, # make required
-{"name":"level1_id","type": "INTEGER","mode": "REQUIRED"},
-{"name":"level1_label","type": "STRING","mode": "REQUIRED"},
-{"name":"level3_id","type": "INTEGER","mode": "REQUIRED"},
-{"name":"level3_label","type": "STRING","mode": "REQUIRED"}] + base_schema + 
-[
-{"name":"_5_sec_in_view_impressions","type": "INTEGER","mode": "NULLABLE"},
-{"name":"avg_real_estate_perc","type": "FLOAT","mode": "NULLABLE"},
-{"name":"susp_human_and_inview_gm_meas_sum","type": "FLOAT","mode": "NULLABLE"},
-{"name":"susp_valid_and_inview_gm_meas_sum","type": "FLOAT","mode": "NULLABLE"}] + video_schema
-    }
+13386: non_google_dimensions + base_schema + video_schema + [{"name":"_5_sec_in_view_impressions","type": "INTEGER","mode": "NULLABLE"}],
+
+2698 : google_dimensions + base_schema + video_schema +
+[{"name":"_5_sec_in_view_impressions","type": "INTEGER","mode": "NULLABLE"}],
+
+8268 : non_google_dimensions + base_schema + video_schema
+
+}
+
+
 
 ## Note: rest in schemas_json.py , need to finish later
