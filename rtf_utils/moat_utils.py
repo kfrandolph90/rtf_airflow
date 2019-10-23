@@ -238,15 +238,24 @@ moat_schemas = {
 
 6195503 : non_google_dimensions + fb_schema + [{"name":"iva", "type":"INTEGER", "mode":"NULLABLE"}],
 
+6195541 : [{"name":"date","type": "DATE","mode": "REQUIRED"},
+{"name":"level1_id","type": "INTEGER","mode": "REQUIRED"},
+{"name":"level1_label","type": "STRING","mode": "REQUIRED"},
+{"name":"level2_id","type": "INTEGER","mode": "REQUIRED"}, 
+{"name":"level2_label","type": "STRING","mode": "REQUIRED"},
+{"name":"loads_unfiltered","type": "INTEGER","mode": "NULLABLE"},
+{"name":"impressions_analyzed","type": "INTEGER","mode": "NULLABLE"}, 
+{"name":"susp_human","type": "FLOAT","mode": "NULLABLE"},
+{"name":"susp_valid","type": "FLOAT","mode": "NULLABLE"}],
 ###################### Video Tiles ######################
 6179366 : [
 {"name":"date","type": "DATE","mode": "REQUIRED"},
 {"name":"level2_id","type": "INTEGER","mode": "REQUIRED"},
 {"name":"level2_label","type": "STRING","mode": "REQUIRED"},
 {"name":"level4_id","type": "INTEGER","mode": "REQUIRED"},
-{"name":"level4_label","type": "STRING","mode": "REQUIRED"}] + base_schema + [
+{"name":"level4_label","type": "STRING","mode": "REQUIRED"}] + base_schema + video_schema  + [
 {"name":"_5_sec_in_view_impressions","type": "INTEGER","mode": "NULLABLE"},
-] + video_schema,
+],
 
 6178833 : non_google_dimensions + base_schema + video_schema  + [
 {"name":"_5_sec_in_view_impressions","type": "INTEGER","mode": "NULLABLE"}],
