@@ -1,10 +1,12 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 #   Some helpful wrappers for gcp
 #   RTF - Kyle.Randolph@essenceglobal.com
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+ 
 
 from google.cloud import storage,bigquery
 import logging
+
 
 
 """
@@ -33,10 +35,29 @@ class BigQuery:
         query_job = self.client.query(query,location='US',job_config=job_config)
         return query_job.result() 
     
-    def load_from_gcs(self,dataset_id,file_uri,dest_table,schema=None,mode=None,ext="csv",**kwargs):
+    def load_from_gcs(self,dataset_id,file_uri,dest_table,schema=None,mode=None,extension="csv",**kwargs):
         """
-        Schema expects list of dictionaries contain columns with 'name' and 'type' keyss
+        Gets data for tile dimenions/filters within data range. 
+
+        Cleans and saves file locally
+        
+        Args:
+            dataset_id (int): request start date in YYYYMMDD
+            file_uri (str): request end date in YYYYMMDD        
+            
+            dest_table (str): API token
+
+            schema (list): list of BigQuery.SchemaObject. defaults to none which inferes schemea
+            
+            mode (str)(opt): defaults to WRITE_TRUNCATE disposition
+            
+            extension: (str): csv or json
+
+        Returns:
+            filename (str): filename of local file in working dir 
         """
+
+        
         job_config = bigquery.LoadJobConfig()
         dataset_ref = self.client.dataset(dataset_id)
         
@@ -46,11 +67,8 @@ class BigQuery:
             job_config.write_disposition = bigquery.WriteDisposition.WRITE_EMPTY        
         else:
             job_config.write_disposition = bigquery.WriteDisposition.WRITE_TRUNCATE
-        
-        
-        
 
-        if ext=="json":
+        if extension=="json":
             job_config.source_format = bigquery.SourceFormat.NEWLINE_DELIMITED_JSON
         else:
             job_config.source_format = bigquery.SourceFormat.CSV
@@ -59,11 +77,7 @@ class BigQuery:
         ##Optional
 
         if schema:
-            bq_schema = []
-            for col in schema:
-                bq_schema.append(bigquery.SchemaField(col.get('name'),col.get('type')))
-                
-            job_config.schema = bq_schema
+            job_config.schema = schema
         else:
             job_config.autodetect = True
         
@@ -76,6 +90,7 @@ class BigQuery:
                                                     location="US",  
                                                     job_config=job_config)
         
+        #logging.info(load_job.job_id)
         return load_job
 
 class CloudStorage:
@@ -107,6 +122,8 @@ class CloudStorage:
 
         logging.info('File uploaded as {}.'.format(destination_blob_name))
 
+        return blob
+
     def copy_blob(self,bucket_name, blob_name, new_bucket_name, new_blob_name):
         """Copies a blob from one bucket to another with a new name."""
         source_bucket = self.client.get_bucket(bucket_name)
@@ -133,6 +150,6 @@ class CloudStorage:
         blob = bucket.get_blob(blob)
         return blob
 
-
+    
     
         

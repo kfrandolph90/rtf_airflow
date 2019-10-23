@@ -22,8 +22,6 @@ class CampaignManagerReport:
     Reference:
     131786951123-compute@developer.gserviceaccount.com ----> 5096586
     
-    
-    
     """
     
     api_name = 'dfareporting'
@@ -158,7 +156,7 @@ def get_dfa_report(creds,report_id,start_date,end_date,profile_id = 5096586):
     
     ## ok lets download this fucker
     print("The Download Part")
-    tries = 0            
+    tries = 0    
     
     if report.file['status'] != 'REPORT_AVAILABLE':
         
@@ -168,6 +166,7 @@ def get_dfa_report(creds,report_id,start_date,end_date,profile_id = 5096586):
             time.sleep(10)            
             report.get_report_status()
             tries +=1
+
 
             if report.file['status'] == 'REPORT_AVAILABLE':
                 print("Print Report Available!")
