@@ -52,6 +52,8 @@ class MoatTile:
         6195427:{'type':'disp','name':'D_instagram-stories_na'},
         6195503:{'type':'disp','name':'D_facebook-ext-metrics_na'},
         6196284:{'type':'video','name':'V_youtube_progres'},
+        6195510:{'type':'video','name':'V_ig_na'},
+        6196171:{'type':'video','name':'V_youtube_master'},
 }
 
     def __init__(self, tile_id, level_filter=None, dimensions=None, **kwargs):
@@ -193,7 +195,7 @@ class MoatTile:
 non_google_dimensions = [{"name":"date","type": "DATE","mode": "REQUIRED"},
 {"name":"level1_id","type": "INTEGER","mode": "REQUIRED"},
 {"name":"level1_label","type": "STRING","mode": "REQUIRED"},
-{"name":"level4_id","type": "INTEGER","mode": "REQUIRED"},
+{"name":"level4_id","type": "STRING","mode": "REQUIRED"},
 {"name":"level4_label","type": "STRING","mode": "REQUIRED"}]
 
 
@@ -241,7 +243,7 @@ moat_schemas = {
 6195541 : [{"name":"date","type": "DATE","mode": "REQUIRED"},
 {"name":"level1_id","type": "INTEGER","mode": "REQUIRED"},
 {"name":"level1_label","type": "STRING","mode": "REQUIRED"},
-{"name":"level2_id","type": "INTEGER","mode": "REQUIRED"}, 
+{"name":"level2_id","type": "STRING","mode": "REQUIRED"}, 
 {"name":"level2_label","type": "STRING","mode": "REQUIRED"},
 {"name":"loads_unfiltered","type": "INTEGER","mode": "NULLABLE"},
 {"name":"impressions_analyzed","type": "INTEGER","mode": "NULLABLE"}, 
@@ -252,7 +254,7 @@ moat_schemas = {
 {"name":"date","type": "DATE","mode": "REQUIRED"},
 {"name":"level2_id","type": "INTEGER","mode": "REQUIRED"},
 {"name":"level2_label","type": "STRING","mode": "REQUIRED"},
-{"name":"level4_id","type": "INTEGER","mode": "REQUIRED"},
+{"name":"level4_id","type": "STRING","mode": "REQUIRED"},
 {"name":"level4_label","type": "STRING","mode": "REQUIRED"}] + base_schema + video_schema  + [
 {"name":"_5_sec_in_view_impressions","type": "INTEGER","mode": "NULLABLE"},
 ],
@@ -262,13 +264,22 @@ moat_schemas = {
 
 13386: non_google_dimensions + base_schema + video_schema + [{"name":"_5_sec_in_view_impressions","type": "INTEGER","mode": "NULLABLE"}],
 
+6196171: non_google_dimensions + base_schema + video_schema + [{"name":"_5_sec_in_view_impressions","type": "INTEGER","mode": "NULLABLE"}],
+
 2698 : google_dimensions + base_schema + video_schema +
 [{"name":"_5_sec_in_view_impressions","type": "INTEGER","mode": "NULLABLE"}],
 
-8268 : non_google_dimensions + base_schema + video_schema
+8268 : non_google_dimensions + base_schema + video_schema,
+
+6195505 : non_google_dimensions + base_schema + video_schema,
+
+6195510 : non_google_dimensions + base_schema + video_schema,
+
+6195543:  [{"name":"date","type": "DATE","mode": "REQUIRED"},
+{"name":"level1_id","type": "INTEGER","mode": "REQUIRED"},
+{"name":"level1_label","type": "STRING","mode": "REQUIRED"},
+{"name":"level2_id","type": "STRING","mode": "REQUIRED"}, 
+{"name":"level2_label","type": "STRING","mode": "REQUIRED"}] + base_schema + video_schema,
 
 }
-
-
-
 ## Note: rest in schemas_json.py , need to finish later
