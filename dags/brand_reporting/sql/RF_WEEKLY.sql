@@ -6,7 +6,7 @@ coalesce(a.goal_category,b.goal_category) goal_category,
 coalesce(a.frequency_range,b.frequency_range) frequency_range,
 coalesce(a.unique_user_count+b.unique_device_count, a.unique_user_count,b.unique_device_count) reach,
 coalesce(a.impressions+b.impressions,a.impressions,b.impressions) impressions,
-'{{ ds_nodash }}' as date_updated
+'{{ ds }}' as date_updated
   
 FROM
     `{{ params.adh_project_id }}.{{ params.adh_dataset }}.{{ params.main_table }}` a
