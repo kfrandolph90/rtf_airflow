@@ -1,0 +1,20 @@
+######################################################################
+# Plan Config File for RTF Brand Reporting
+# Rev: 1 
+# Contact: kyle.randolph@essenceglobal.com
+#
+#
+######################################################################
+
+plans:
+- olive_plan_name: "Chromebooks EMEA 2018-2020 Q1 2020 United Kingdom"
+  olive_plan_id: 8221
+  start_date: '2020-01-01'
+  end_date: '2020-03-06'
+  campaign_manager_ids: [22890027,22501418,23579146]
+
+- olive_plan_name: "Chromebooks EMEA 2018-2020 Q1 2020 United Kingdom"
+  olive_plan_id: 8221
+  start_date: '2020-01-01'
+  end_date: '2020-03-06'
+  campaign_manager_ids: [22890027,22501418,23579146]
